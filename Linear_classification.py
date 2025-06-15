@@ -83,8 +83,7 @@ if __name__ == "__main__":
     plt.show()
     print("Saved GIF → perceptron_training.gif")
 
-    
-    '''
+
     x1_data = []
     x2_data = []
 
@@ -100,5 +99,4 @@ if __name__ == "__main__":
 
     plt.plot(x1_data, x2_data)
     plt.savefig("1st_plot")
-    plt.show
-    '''
+    plt.show()

@@ -37,8 +37,9 @@ class Layer(object):
     '''
     def __init__(self, input_dim, output_dim,
                  activation, dactivation):
-        self.W = np.random.normal(size=(input_dim, output_dim))
-        self.b = np.zeros(output_dim)
+        limit = np.sqrt(6 / (input_dim + output_dim))
+        self.W = np.random.uniform(-limit, limit, size=(input_dim, output_dim))
+        self.b = np.random.normal(loc=0.0, scale=0.1, size=(output_dim,))
 
         self.activation = activation
         self.dactivation = dactivation
@@ -73,7 +74,6 @@ def dsigmoid(x):
 
 if __name__ == '__main__':
     np.random.seed(123)
-
     '''
     1. データの準備
     '''
@@ -89,23 +89,26 @@ if __name__ == '__main__':
     '''
     3. モデルの学習
     '''
-    def compute_loss(t, y):
+    def compute_loss(t, y, eps=1e-8):
+        y = np.clip(y, eps, 1 - eps)
         return (-t * np.log(y) - (1 - t) * np.log(1 - y)).sum()
 
     def train_step(x, t):
         y = model(x)
+        grads = []
+        W_prev = None
         for i, layer in enumerate(model.layers[::-1]):
             if i == 0:
                 delta = y - t
             else:
-                delta = layer.backward(delta, W)
+                delta = layer.backward(delta, W_prev)
 
             dW, db = layer.compute_gradients(delta)
-            layer.W = layer.W - 0.1 * dW
-            layer.b = layer.b - 0.1 * db
-
-            W = layer.W
-
+            grads.append((layer, dW, db))
+            W_prev = layer.W
+        for layer, dW, db in grads:
+            layer.W = layer.W - 0.5 * dW
+            layer.b = layer.b - 0.5 * db
         loss = compute_loss(t, y)
         return loss
 
@@ -116,7 +119,7 @@ if __name__ == '__main__':
 
         if epoch % 100 == 0 or epoch == epochs - 1:
             print('epoch: {}, loss: {:.3f}'.format(
-                epoch+1,
+                epoch,
                 train_loss
             ))
 
@@ -125,4 +128,8 @@ if __name__ == '__main__':
     '''
     for input in x:
         print('{} => {:.3f}'.format(input, model(input)[0]))
-        print(model.l1.W)
+    print("隠れ層の重み：")
+    print(f"[w11,w21] = {model.l1.W[0]}, [b1] = {model.l1.b[0]}")
+    print(f"[w12,w22] = {model.l1.W[1]}, [b2] = {model.l1.b[1]}")
+    print("出力層の重み：")
+    print(f"[v1,v2] = {model.l2.W[:,0]}, [c] = {model.l2.b[0]}")

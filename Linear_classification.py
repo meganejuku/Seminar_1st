@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 # モデルの定義
 class SimplePerseptron():
-    def __init__(self, input_dim):
+    def __init__(self, input_dim, lr = 0.01):
         self.input_dim = input_dim
         self.w = np.random.normal(size=(input_dim, ))
         self.b = 0.
-    
+        self.lr = lr
+
     def forward(self, x):
         y = step(np.matmul(self.w, x) + self.b)
         return y
@@ -15,8 +16,8 @@ class SimplePerseptron():
     def compute_deltas(self, x, t):
         y = self.forward(x)
         delta = y - t
-        dw = delta * x
-        db = delta
+        dw = delta * self.lr * x
+        db = delta * self.lr
         return dw, db
 def step(x):
     return 1 * (x > 0)
@@ -79,9 +80,9 @@ if __name__ == "__main__":
         fig, update, frames=len(history),
         init_func=init, blit=True, interval=100
     )
-    ani.save("perceptron_training.gif", writer='pillow', fps=frame_late)
+    ani.save("train_GIF.gif", writer='pillow', fps=frame_late)
     plt.show()
-    print("Saved GIF → perceptron_training.gif")
+    print("Saved GIF → train_GIF.gif")
 
 
     x1_data = []
@@ -98,5 +99,5 @@ if __name__ == "__main__":
     x2_data.append(plot_x2)
 
     plt.plot(x1_data, x2_data)
-    plt.savefig("1st_plot")
+    plt.savefig("result.png")
     plt.show()

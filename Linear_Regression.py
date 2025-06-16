@@ -59,4 +59,4 @@ plt.scatter(x_data, y, 10, c="Green")
 plt.plot(x_data, y_pred, color="red")
 y_real = a * x_data + b
 plt.plot(x_data, y_real, color="Blue")
-plt.savefig("output.png")
+plt.savefig("Regression_output.png")

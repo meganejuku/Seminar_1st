@@ -1,7 +1,3 @@
-'''
-3.6.3 多層パーセプトロン
-'''
-
 import numpy as np
 
 
@@ -32,9 +28,7 @@ class MLP(object):
 
 
 class Layer(object):
-    '''
-    層間の結合
-    '''
+
     def __init__(self, input_dim, output_dim,
                  activation, dactivation):
         limit = np.sqrt(6 / (input_dim + output_dim))
@@ -66,34 +60,24 @@ class Layer(object):
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
-
-
 def dsigmoid(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
 
 if __name__ == '__main__':
     np.random.seed(123)
-    '''
-    1. データの準備
-    '''
+
     # XOR
     x = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
     t = np.array([[0], [1], [1], [0]])
 
-    '''
-    2. モデルの構築
-    '''
     model = MLP(2, 2, 1)
 
-    '''
-    3. モデルの学習
-    '''
-    def compute_loss(t, y, eps=1e-8):
-        y = np.clip(y, eps, 1 - eps)
+
+    def compute_loss(t, y):
         return (-t * np.log(y) - (1 - t) * np.log(1 - y)).sum()
 
-    def train_step(x, t):
+    def train_step(x, t, lr=0.5):
         y = model(x)
         grads = []
         W_prev = None
@@ -107,27 +91,26 @@ if __name__ == '__main__':
             grads.append((layer, dW, db))
             W_prev = layer.W
         for layer, dW, db in grads:
-            layer.W = layer.W - 0.5 * dW
-            layer.b = layer.b - 0.5 * db
+            layer.W = layer.W - lr * dW
+            layer.b = layer.b - lr * db
         loss = compute_loss(t, y)
         return loss
 
     epochs = 1000
-
+    # 学習ループ
     for epoch in range(epochs):
-        train_loss = train_step(x, t)
+        train_loss = train_step(x, t, lr=0.5)
 
         if epoch % 100 == 0 or epoch == epochs - 1:
             print('epoch: {}, loss: {:.3f}'.format(
                 epoch,
                 train_loss
             ))
-
-    '''
-    4. モデルの評価
-    '''
+    # 評価
     for input in x:
         print('{} => {:.3f}'.format(input, model(input)[0]))
+    
+    # 重みの表示
     print("隠れ層の重み：")
     print(f"[w11,w21] = {model.l1.W[0]}, [b1] = {model.l1.b[0]}")
     print(f"[w12,w22] = {model.l1.W[1]}, [b2] = {model.l1.b[1]}")
